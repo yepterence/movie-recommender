@@ -28,10 +28,17 @@ movies <- str_split_fixed(readLines(unzip(dl, "ml-10M100K/movies.dat")), "\\::",
 
 colnames(movies) <- c("movieId", "title", "genres")
 
-# movies df is returning movieId with NA values after coercing strings. 
-# Need to find a better way
-movies <- as.data.frame(movies) %>% mutate(movieId = as.numeric(levels(movieId))[movieId])
 
+# NA values exist in movieId column 
+# NA values must be replaced prior to running mutate function on dataset
+seq_movieId_val<-seq(1:nrow(movies))
+# using the coalesce function we can ensure that the NA values will be replaced by 
+# a subsequent number that matches the current sequence 
+movies <- as.data.frame(movies) %>% mutate(movieId = coalesce(seq_movieId_val,as.numeric(levels(movieId))[movieId]),
+                                           title = as.character(title),
+                                           genres = as.character(genres))
+
+movielens <- left_join(ratings, movies, by = "movieId")
 
 # Validation set will be 10% of MovieLens data
 set.seed(1, sample.kind="Rounding")
